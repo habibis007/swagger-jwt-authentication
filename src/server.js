@@ -1,5 +1,8 @@
 require('dotenv').config();
 const express = require('express');
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const swaggerConfig = require('./config/swaggerConfig');
 const routes = require('./routes');
 //  import environment variables
 const {API_PORT, BASE_PATH, NODE_ENV} = require('./config/serverConfig');
@@ -22,8 +25,16 @@ const server = {
                 });
 
                 /**
-                 * TODO: Swagger
+                 * Configure Swagger
                  */
+                if(NODE_ENV !== 'test'){
+                    const swaggerSpec = (swaggerJsDoc(swaggerConfig));
+                    app.get('/swagger.json',  (req, res)=> {
+                        res.setHeader('Content-Type', 'application/json');
+                        res.send(swaggerSpec);
+                    });
+                    app.use(BASE_PATH + 'docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+                }
 
                  // routes
                 app.use(BASE_PATH, routes);
